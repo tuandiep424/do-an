@@ -1,0 +1,153 @@
+﻿@using App.Services;
+@inject HomeCategoryService _homeCategory;
+@{
+    ViewData["Title"] = "Trang chủ";
+    List<ProductWithRate>? productsBestSeller = _homeCategory.GetData().Products;
+    List<Product> SamsungHot = ViewBag.SamsungHot;
+    List<Product> IPhoneHot = ViewBag.IPhoneHot;
+    List<Product> XiaomiHot = ViewBag.XiaomiHot;
+    List<Product> RealmeHot = ViewBag.RealmeHot;
+    List<Product> productDiscount = ViewBag.Discount;
+    List<Post> posts = ViewBag.Posts;
+}
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast fade hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header align-items-center">
+            <i class="text-warning fs-6 fa-solid fa-circle-exclamation"></i>
+            <span class="ms-2 me-auto fs-6">Đã thêm sản phẩm vào giỏ hàng</span>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<partial name="_HomeSlide"></partial>
+
+<div class="product-bestseller product-container">
+    <div class="arrow left-arrow">
+        <i class="fa-solid fa-angle-left"></i>
+    </div>
+    <div class="arrow right-arrow">
+        <i class="fa-solid fa-angle-right"></i>
+    </div>
+    <div class="heading">
+        <img src="/images/best.png" alt="">
+        <span>SẢN PHẨM BÁN CHẠY</span>
+    </div>
+    <div class="product_grid">
+
+        @if (productsBestSeller != null)
+        {
+            foreach (var item in productsBestSeller)
+            {
+                @await Component.InvokeAsync("App.Components.ProductComponent", item.Product)
+                ;
+            }
+        }
+    </div>
+</div>
+
+@if (productDiscount.Count > 0)
+{
+    <div class="container-xl">
+        <h4 class="hot-heading"><a class="text-white">ĐANG GIẢM GIÁ</a> <img src="/images/Discount.png" alt=""></h4>
+        <div class="product-container">
+            <div class="product_grid">
+                @foreach (var item in productDiscount)
+                {
+                    @await Component.InvokeAsync("App.Components.ProductComponent", item)
+                    ;
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (IPhoneHot.Count > 0)
+{
+    <div class="container-xl">
+        <h4 class="hot-heading"><a
+                href='@Url.Action("Index", "ViewProduct", new {area = "Products", hangsx="Apple"})'>IPHONE NỔI BẬT</a> <img
+                src="/images/hot-icon.webp" alt=""></h4>
+        <div class="product-container">
+            <div class="product_grid">
+                @foreach (var item in IPhoneHot)
+                {
+                    @await Component.InvokeAsync("App.Components.ProductComponent", item)
+                    ;
+                }
+
+            </div>
+        </div>
+    </div>
+}
+
+@if (SamsungHot.Count > 0)
+{
+    <div class="container-xl">
+        <h4 class="hot-heading"><a
+                href='@Url.Action("Index", "ViewProduct", new {area = "Products", hangsx="Samsung"})'>SAMSUNG NỔI BẬT</a>
+            <img src="/images/hot-icon.webp" alt="">
+        </h4>
+        <div class="product-container">
+            <div class="product_grid">
+                @foreach (var item in SamsungHot)
+                {
+                    @await Component.InvokeAsync("App.Components.ProductComponent", item)
+                    ;
+                }
+
+            </div>
+        </div>
+    </div>
+}
+@if (XiaomiHot.Count > 0)
+{
+    <div class="container-xl">
+        <h4 class="hot-heading"><a
+                href='@Url.Action("Index", "ViewProduct", new {area = "Products", hangsx="Xiaomi"})'>XIAOMI NỔI BẬT</a> <img
+                src="/images/hot-icon.webp" alt=""></h4>
+        <div class="product-container">
+            <div class="product_grid">
+                @foreach (var item in XiaomiHot)
+                {
+                    @await Component.InvokeAsync("App.Components.ProductComponent", item)
+                    ;
+                }
+
+            </div>
+        </div>
+    </div>
+}
+@if (RealmeHot.Count > 0)
+{
+    <div class="container-xl">
+        <h4 class="hot-heading"><a
+                href='@Url.Action("Index", "ViewProduct", new {area = "Products", hangsx="Realme"})'>REALME NỔI BẬT</a> <img
+                src="/images/hot-icon.webp" alt=""></h4>
+        <div class="product-container">
+            <div class="product_grid">
+                @foreach (var item in RealmeHot)
+                {
+                    @await Component.InvokeAsync("App.Components.ProductComponent", item)
+                    ;
+                }
+
+            </div>
+        </div>
+    </div>
+}
+
+@if (posts.Count > 0)
+{
+    <div class="container-xl">
+        <h4 class="hot-heading"><a href='@Url.Action("Index", "ViewPost", new {area = "Posts"})'>TIN
+                TỨC</a> <img src="/images/news.png" alt=""></h4>
+        @await Component.InvokeAsync("App.Components.ListPostComponent", posts)
+    </div>
+}
+
+
+@section Scripts {
+    <script src="~/js/Helper/index.js"></script>
+    <script src="~/js/Products/homePage.js"></script>
+}

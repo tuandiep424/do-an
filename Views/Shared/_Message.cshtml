@@ -1,0 +1,15 @@
+@{
+    var tempdata = ViewBag.Message as string;
+}
+
+@if (!string.IsNullOrEmpty(tempdata))
+{
+    var statusMessageClass = tempdata.Contains("//") ? "danger" : "success";
+    tempdata = tempdata.Replace("//", "");
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        @tempdata
+    </div>
+
+    ViewBag.Message = "";
+}

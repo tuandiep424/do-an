@@ -1,0 +1,112 @@
+@import "variables";
+
+.primary-text {
+    color: $primary-color !important;
+}
+
+.secondary-text {
+    color: $secondary-color !important;
+}
+
+.third-text {
+    color: $third-color !important;
+}
+
+.fourth-text {
+    color: $fourth-color !important;
+}
+
+.primary-bg {
+    background-color: $primary-color !important;
+}
+
+.secondary-bg {
+    background-color: $secondary-color !important;
+}
+
+.third-bg {
+    background-color: $third-color !important;
+}
+
+.fourth-bg {
+    background-color: $fourth-color !important;
+}
+
+html {
+    font-size: 14px;
+}
+
+.text-color {
+    color: $text-color !important;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow:
+        0 0 0 0.1rem white,
+        0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    background-color: #f5f5f5 !important;
+}
+
+@import "admincp/addPhoto";
+@import "admincp/productDetails";
+@import "admincp/userManager";
+@import "admincp/modalEditImg";
+@import "admincp/orderDetails";
+@import "admincp/createProduct";
+@import "admincp/editUser";
+@import "admincp/layoutAdmin";
+@import "admincp/homePage";
+@import "admincp/productManager";
+@import "admincp/message";
+
+@import "identity/login";
+@import "identity/forgotPassword";
+@import "identity/register";
+@import "identity/accountManager";
+
+@import "cart/cart";
+
+@import "order/order";
+@import "order/orderConfirmed";
+@import "order/orderCheck";
+@import "order/payResult";
+@import "order/orderByUser";
+
+@import "Product/productDetails";
+@import "Product/homeProductFilter";
+@import "Product/homeProduct";
+@import "Product/otherProduct";
+
+@import "homePage/chat";
+@import "homePage/layoutHome";
+@import "homePage/breadcrumb";
+@import "homePage/homeSlide";
+
+@import "Post/postDetails";
+@import "Post/listPost";
+@import "Post/postPage";
+@import "Post/otherPost";
+
+@import "Contact/contact.scss";
+
+@import "media-queries";
+@import "mixin";

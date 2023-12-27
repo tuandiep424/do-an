@@ -1,0 +1,92 @@
+@model List<Brand>
+@{
+    ViewData["Title"] = "Quản lý hãng sản phẩm";
+}
+
+<div class="card h-100">
+    <div class="card-header d-flex flex-md-row justify-content-between align-items-md-center flex-column align-items-start">
+        <div class="left-header">
+            <i class="fas fa-table me-1"></i>
+            @ViewData["Title"]
+            <a class="ms-1 btn btn-primary btn-sm rounded-circle" asp-action="Create" asp-controller="Brand"
+                asp-area="Products">
+                <i class="fa-solid fa-plus"></i>
+            </a>
+        </div>
+        <div class="right-header d-flex justify-content-center align-items-center mt-2 mt-md-0">
+            <form method="get">
+                <div class="input-group-sm d-flex justify-content-end align-items-center">
+                    <input class="form-control" type="text" name="s" placeholder="Tìm kiếm...."
+                        value="@Context.Request.Query["s"]">
+                    <button class="btn ms-1" type="submit">
+                        <i class="text-primary fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </form>
+            <a class="ms-1" asp-action="Index" asp-controller="Brand" asp-area="Products">
+                <i class="text-danger fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-responsive">
+            <table class="table table-bordered mt-2">
+                <thead>
+                    <tr class="text-center">
+                        <th>Tên hãng</th>
+                        <th>Sản phẩm có</th>
+                        <th>Địa chỉ Url</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="text-center">
+                            <td>
+                                <a class="text-decoration-none" asp-action="Details" asp-controller="Brand"
+                                    asp-area="Products" asp-route-id="@item.Id">@item.Name</a>
+                            </td>
+                            <td>
+                                @item.Products?.Count
+                            </td>
+                            <td>
+                                @item.Slug
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <a class="text-primary text-decoration-none" asp-action="Edit" asp-controller="Brand"
+                                        asp-area="Products" asp-route-id="@item.Id">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    <button class="btn" onclick="DeleteItem('@Url.Action("Delete", "Brand", new {area = "Products", id = item.Id})')">
+                                        <i class="text-danger fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+            </div>
+        </div>
+        @{
+            var pageModel = new PagingModel()
+            {
+                CurrentPage = ViewBag.CurrentPage,
+                CountPage = ViewBag.CountPage,
+                GenerateUrl = p => Url.Action("Index", "Brand", new { area = "Products", p , s = Context.Request.Query["s"]}) ?? ""
+            };
+        }
+        <partial name="_Paging" model="@pageModel"></partial>
+        <partial name="_AlertMessage" />
+    </div>
+</div>
+
+@section Scripts {
+<partial name="_ModalDelete"></partial>
+
+}

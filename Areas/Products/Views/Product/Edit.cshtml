@@ -1,0 +1,354 @@
+@model CreateProductModel
+@{
+    ViewData["Title"] = "Chính sửa sản phẩm";
+    var subPhoto = Model.Photos?.ToList() ?? new List<ProductPhoto>();
+    @* Layout = "/Views/Shared/_Layout.cshtml"; *@
+    var subPhotoCount = subPhoto.Count();
+}
+
+
+<div class="card">
+    <div class="card-header">
+        @ViewData["Title"]
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="form-group mb-2">
+                        <label asp-for="Code" class="form-label"></label>
+                        <input asp-for="Code" class="form-control">
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control">
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="CategoryId" class="form-label"></label>
+                        <select asp-for="CategoryId" asp-items="@ViewBag.Categories" class="w-100"></select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="BrandId" class="form-label"></label>
+                        <select asp-for="BrandId" asp-items="@ViewBag.Brands" class="w-100 form-select"></select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="Slug" class="form-label"></label>
+                        <input asp-for="Slug" class="form-control">
+                        <span asp-validation-for="Slug" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="form-group mb-2">
+                        <label asp-for="Battery" class="form-label"></label>
+                        <input asp-for="Battery" class="form-control">
+                        <span asp-validation-for="Battery" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="OS" class="form-label"></label>
+                        <input asp-for="OS" class="form-control">
+                        <span asp-validation-for="OS" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="Chipset" class="form-label"></label>
+                        <input asp-for="Chipset" class="form-control">
+                        <span asp-validation-for="Chipset" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="ScreenSize" class="form-label"></label>
+                        <input asp-for="ScreenSize" class="form-control">
+                        <span asp-validation-for="ScreenSize" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="Charger" class="form-label"></label>
+                        <input asp-for="Charger" class="form-control">
+                        <span asp-validation-for="Charger" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="form-group mb-2">
+                        <label asp-for="EntryDate" class="form-label"></label>
+                        <input asp-for="EntryDate" class="form-control" type="date">
+                        <span asp-validation-for="EntryDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="ReleaseDate" class="form-label"></label>
+                        <input asp-for="ReleaseDate" class="form-control" type="date">
+                        <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="SIM" class="form-label"></label>
+                        <textarea asp-for="SIM" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="SIM" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label asp-for="Camera" class="form-label"></label>
+                        <textarea asp-for="Camera" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Camera" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mt-4">
+                        <input asp-for="Published" class="form-check-input" checked>
+                        <label asp-for="Published" class="form-check-label"></label>
+                        <span asp-validation-for="Published" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            @* Photo *@
+            <div class="product-add-photo d-flex flex-column mt-4">
+                <div class="row product-photo-container">
+                    <div class="sub-photo-container">
+                        <div class="sub-photo-input-container">
+                            <span class="form-label">Hình ảnh</span>
+                            <br>
+                            <div id="btn-add-sub-photo">
+                                <label id="btn-choose-sub-photo" asp-for="SubImage![subPhoto.Count()].FileUpload" class="btn btn-primary">
+                                    Upload
+                                    <i class="fa-solid fa-plus"></i>
+                                </label>
+                                <input type="hidden" name="newSubPhoto.Index" value="0">
+                                <input type="file" name="newSubPhoto[0].FileUpload" id="sub-photo-input-0" hidden
+                                    data-id="0" oninput="changeSubPhoto(this)">
+                            </div>
+                        </div>
+                        <ul class="show-sub-photo row">
+                            @{
+                                int indexSubPhoto = 0;
+                            }
+                            @if (subPhoto != null)
+                            {
+                                foreach (var item in subPhoto)
+                                {
+                                    <li class="sub-photo-item col-xl-3 col-md-4 mb-2 position-relative" data-id="@indexSubPhoto">
+                                        <input type="hidden" name="SubImage.Index" value="@indexSubPhoto">
+                                        <input type="hidden" name="SubImage[@indexSubPhoto].Id" class="input-id-sub-photo" value="@item.Id" disabled>
+                                        <input asp-for="SubImage![indexSubPhoto].FileUpload" hidden oninput="changeSubPhoto(this)">
+                                        <img src="/files/Products/@item.Name" class="sub-photo-img">
+                                        <span class="btn btn-primary btn-sm position-absolute top-0 end-0 mt-1 me-4 translate-middle-x"
+                                            onclick="editSubImg(this)">
+                                            <i class="text-white fa-regular fa-pen-to-square"></i>
+                                        </span>
+                                        <span class="btn btn-danger btn-sm position-absolute top-0 end-0 mt-1 me-2"
+                                            onclick="deleteSubPhoto(this)">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </span>
+                                    </li>
+                                    indexSubPhoto++;
+                                }
+                            }
+                            <li class="sub-photo-item col-xl-3 col-md-4 mb-2 position-relative" data-id="@indexSubPhoto" style="display: none;">
+                                <input type="hidden" name="SubImage.Index" value="@indexSubPhoto">
+                                <input asp-for="SubImage![indexSubPhoto].FileUpload" hidden oninput="changeSubPhoto(this)">
+                                <img src="" class="sub-photo-img">
+                                <span class="btn btn-primary btn-sm position-absolute top-0 end-0 mt-1 me-4 translate-middle-x"
+                                    onclick="editSubImg(this)">
+                                    <i class="text-white fa-regular fa-pen-to-square"></i>
+                                </span>
+                                <span class="btn btn-danger btn-sm position-absolute top-0 end-0 mt-1 me-1"
+                                    onclick="deleteSubPhoto(this)">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            @* Color *@
+            <div class="row">
+                <div class="col-md">
+                    <div class="form-group mb-2" id="color-container">
+                        <p>
+                            Màu sắc
+                            <span class="btn btn-primary btn-sm ms-2" onclick="addColor(this)">
+                                <i class="fa-solid fa-plus"></i>
+                            </span>
+                        </p>
+                        @if (Model.Colors != null)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.Colors)
+                            {
+                                <div class="card color-group mb-3" data-id="@index">
+                                    <div class="card-header position-relative">
+                                        <span class="btn btn-danger btn-sm position-absolute top-0 end-0 me-1 mt-1" onclick="deleteColor(this, @index)">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </span>
+                                        <div class="row">
+                                            <div class="col-xl-4">
+                                                <div class="row">
+                                                    <input type="hidden" name="ProductColor.Index" value="@index">
+                                                    <input type="hidden" name="ProductColor[@index].Id" value="@item.Id">
+                                                    <div class="col-md-6">
+                                                        <label for="ProductColor[@index].Name" class="form-label">Tên màu</label>
+                                                        <input id="ProductColor[@index].Name" name="ProductColor[@index].Name"
+                                                            value="@item.Name" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="ProductColor[@index].Code" class="form-label">Mã màu</label>
+                                                        <input id="ProductColor[@index].Code" name="ProductColor[@index].Code"
+                                                            value="@item.Code" class="form-control form-control-color"
+                                                            type="color">
+                                                    </div>
+                                                </div>
+                                                <div class="color-image mt-2">
+                                                    <input type="hidden" name="ProductColor[@index].Image" class="input-image-name-color" value="@item.Image">
+                                                    <label for="ProductColor[@index].ImageFile"
+                                                        class="btn btn-success btn-sm btn-choose-img"
+                                                        @if(item.Image != null)
+                                                        {
+                                                            <text>style="display: none;"</text>
+                                                        }
+                                                        >Thêm ảnh</label>
+                                                    <input type="file" id="ProductColor[@index].ImageFile"
+                                                        name="ProductColor[@index].ImageFile" class="color-input-img" hidden
+                                                        accept=".png, .jpg, .jpeg, .webp" oninput="changeColorImg(this)">
+                                                    <div class="color-img-show-container position-relative mb-2"
+                                                        @if(item.Image == null)
+                                                        {
+                                                            <text>style="display: none;"</text>
+                                                        }
+                                                        >
+                                                        <img class="color-img-show mt-2"  
+                                                            style="object-fit: contain;"
+                                                            @if(item.Image != null)
+                                                            {
+                                                                <text>src="/files/Products/@item.Image"</text>
+                                                            }
+                                                        >
+                                                        <span class="btn btn-primary btn-sm position-absolute top-0 end-0 mt-1 me-4 translate-middle-x"
+                                                            onclick="editColorImg(this)">
+                                                            <i class="text-white fa-regular fa-pen-to-square"></i>
+                                                        </span>
+                                                        <span
+                                                            class="btn btn-danger btn-sm position-absolute top-0 end-0 mt-1 me-1"
+                                                            onclick="removeColorImg(this)">
+                                                            <i class="fa-solid fa-xmark"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xl-8">
+                                                <div class="option-group">
+                                                    <div>
+                                                        Options
+                                                        <span class="btn btn-primary btn-sm ms-2" id="add-options"
+                                                            onclick="addOption(this)" data-id="@index">
+                                                            <i class="fa-solid fa-plus"></i>
+                                                        </span>
+                                                    </div>
+                                                    @if (item.Capacities != null)
+                                                    {
+                                                        int opIndex = 0;
+                                                        foreach (var op in item.Capacities)
+                                                        {
+                                                            <div class="row option-item" data-id="@opIndex">
+                                                                <input type="hidden" name="ProductColor[@index].Capacities.Index" value="@opIndex">
+                                                                <input type="hidden" name="ProductColor[@index].Capacities[@opIndex].Id" value="@op.Id">
+                                                                <div class="col-md-2">
+                                                                    <label for="ProductColor[@index].Capacities[@opIndex].Ram"
+                                                                        class="form-label">Ram</label>
+                                                                    <input required id="ProductColor[@index].Capacities[@opIndex].Ram"
+                                                                        name="ProductColor[@index].Capacities[@opIndex].Ram"
+                                                                        value="@op.Ram" class="form-control">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label for="ProductColor[@index].Capacities[@opIndex].Rom"
+                                                                        class="form-label">Rom</label>
+                                                                    <input required id="ProductColor[@index].Capacities[@opIndex].Rom"
+                                                                        name="ProductColor[@index].Capacities[@opIndex].Rom"
+                                                                        value="@op.Rom" class="form-control">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label for="ProductColor[@index].Capacities[@opIndex].Quantity"
+                                                                        class="form-label">Số lượng</label>
+                                                                    <input required id="ProductColor[@index].Capacities[@opIndex].Quantity"
+                                                                        name="ProductColor[@index].Capacities[@opIndex].Quantity"
+                                                                        value="@op.Quantity" class="form-control" min="1">
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label for="ProductColor[@index].Capacities[@opIndex].EntryPrice"
+                                                                        class="form-label">Giá nhập vào</label>
+                                                                    <input required id="ProductColor[@index].Capacities[@opIndex].EntryPrice"
+                                                                        name="ProductColor[@index].Capacities[@opIndex].EntryPrice"
+                                                                        value="@op.EntryPrice.ToString("#")" class="form-control" min="1">
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label for="ProductColor[@index].Capacities[@opIndex].SellPrice"
+                                                                        class="form-label">Giá bán ra</label>
+                                                                    <input required id="ProductColor[@index].Capacities[@opIndex].SellPrice"
+                                                                        name="ProductColor[@index].Capacities[@opIndex].SellPrice"
+                                                                        value="@op.SellPrice.ToString("#")" class="form-control">
+                                                                </div>
+                                                                <div class="col-md-2 mb-1 mt-auto">
+                                                                    @if(opIndex > 0)
+                                                                    {
+                                                                        <span class="btn btn-danger btn-sm" id="delete-option" onclick="deleteOption(this)">
+                                                                            <i class="fa-solid fa-minus"></i>
+                                                                        </span>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            opIndex++;
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                index++;
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" >
+                <div class="col-md">
+                    <label class="form-label">Mô tả</label>
+                    <textarea rows="5" asp-for="Description" class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <button class="btn btn-success" type="submit">Lưu lại</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div id="modal-edit-img" class="modal-edit-img">
+    <div class="card">
+        <div class="card-header">
+            Chỉnh sửa ảnh
+        </div>
+        <div class="card-body">
+            <div class="result">
+                <img id="result-img">
+            </div>
+        </div>
+        <div class="card-footer d-flex">
+            <span class="btn btn-primary btn-sm" onclick="SaveEditedFile(this)">Lưu về máy</span>
+            <span class="btn btn-danger btn-sm ms-auto me-2" onclick="CancelEdit(this)">Hủy bỏ</span>
+            <span class="btn btn-success btn-sm" onclick="ApplyEdit()">Đồng ý</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+    {
+
+    <link rel="stylesheet" href="~/lib/cropperjs/cropper.min.css">
+    <script src="~/lib/cropperjs/cropper.min.js"></script>
+
+    <script src="~/js/Products/EditProduct.js"></script>
+
+    <partial name="_RichTextEditor" model="@("Description")" />
+    <partial name="_MultipleSelect" model="@("CategoryId")"></partial>
+    <partial name="_ValidationScriptsPartial" />
+}

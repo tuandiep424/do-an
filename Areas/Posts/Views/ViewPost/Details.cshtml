@@ -1,0 +1,69 @@
+@model Post
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "/Views/Shared/_Layout.cshtml";
+
+    var otherPosts = ViewBag.OtherPosts as List<Post>;
+    var otherProduct = ViewBag.OutStandingProducts as List<Product>;
+}
+
+<div class="post-details-container mt-2 mt-lg-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="post-details">
+                <div class="post-title fw-semibold">
+                    @Model.Title
+                </div>
+                <div class="post-date text-secondary fw-semibold">
+                    @Model.CreatedAt.ToString("dd/MM/yyyy")
+                </div>
+                <div class="post-content">
+                    @Html.Raw(Model.Content)
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            @if (otherPosts != null)
+            {
+                <div class="other-post">
+                    <p class="other-post-heading mb-2">
+                        Tin tức khác
+                    </p>
+                    @foreach (var item in otherPosts)
+                    {
+                        <div class="other-post-item">
+                            <div class="other-post-img col-4">
+                                <a href='@Url.Action("Details", "ViewPost", new {area = "Posts", slug = item.Slug})'>
+                                    <img src="/files/Posts/@item.Image" alt="">
+                                </a>
+                            </div>
+                            <div class="other-post-info col-8">
+                                <p class="other-post-title mb-1">
+                                    <a class=" fw-semibold text-color text-decoration-none"
+                                        href='@Url.Action("Details", "ViewPost", new {area = "Posts", slug = item.Slug})'>@item.Title</a>
+                                </p>
+                                <p class="other-post-date mb-0 fw-semibold text-secondary">
+                                    @item.CreatedAt.ToString("dd/MM/yyyy")
+                                </p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="outstanding-products mt-4">
+                <p class="outstanding-heading mb-2">Sản phẩm nổi bật</p>
+                @if (otherProduct != null)
+                {
+                    @await Component.InvokeAsync("App.Components.OtherProductComponent", otherProduct)
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/Helper/index.js"></script>
+    <script src="~/js/Post/details.js"></script>
+}

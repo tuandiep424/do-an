@@ -1,0 +1,12 @@
+@using Microsoft.AspNetCore.Authorization
+
+@inject IAuthorizationService Authorization
+
+@{
+    var result = await Authorization.AuthorizeAsync(this.User, "ViewMenuAdmin");
+}
+
+@if (result.Succeeded)
+{
+    <a class="dropdown-item" asp-action="Index" asp-controller="AdminCP" asp-area="AdminCP">Quản lý</a>
+}

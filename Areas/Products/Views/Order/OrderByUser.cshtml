@@ -1,0 +1,170 @@
+@model List<Order>;
+@using App.Data;
+@{
+    Layout = "/Areas/Identity/Views/Shared/_ManageAccountLayout.cshtml";
+    ViewData["Title"] = "Đơn hàng";
+    var queryStatus = Context.Request.Query["status"].ToString();
+}
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast fade hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header align-items-center">
+            <i class="text-warning fs-6 fa-solid fa-circle-exclamation"></i>
+            <span class="ms-2 me-auto fs-6">Đã thêm sản phẩm vào giỏ hàng</span>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<div class="order-by-user-container">
+    <div class="mobile-order-heading">
+        <p class="heading-text position-relative">
+            Đơn hàng
+            @if (Model.Count > 0)
+            {
+                <span class="order-count position-absolute top-0 start-100  badge rounded-pill primary-bg">@Model.Count</span>
+
+            }
+        </p>
+        <hr class="div-heading primary-text">
+    </div>
+    <div class="order-options">
+        <ul class="order-options-list">
+            <li class='order-option-item @if(string.IsNullOrEmpty(queryStatus)) {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products"})' class="order-option-link">
+                    Tất cả
+                </a>
+            </li>
+            <li class='order-option-item @if(queryStatus == "0") {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products", status = 0})'
+                    class="order-option-link">Chờ xác nhận</a>
+            </li>
+            <li class='order-option-item @if(queryStatus == "-1") {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products", status = -1})'
+                    class="order-option-link">Chờ thanh toán</a>
+            </li>
+            <li class='order-option-item @if(queryStatus == "1") {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products", status = 1})'
+                    class="order-option-link">Đã xác nhận</a>
+            </li>
+            <li class='order-option-item @if(queryStatus == "2") {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products", status = 2})'
+                    class="order-option-link">Đang giao</a>
+            </li>
+            <li class='order-option-item @if(queryStatus == "3") {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products", status = 3})'
+                    class="order-option-link">Đã giao</a>
+            </li>
+            <li class='order-option-item @if(queryStatus == "4") {
+            <text>active</text>
+}'>
+                <a href='@Url.Action("OrderByUser", "Order", new {area = "Products", status = 4})'
+                    class="order-option-link">Đã hủy</a>
+            </li>
+        </ul>
+    </div>
+    <ul class="order-list">
+        @foreach (var item in Model)
+        {
+            <li class="order-item">
+                <p class="order-status">
+                    <span>@item.OrderStatuses.Last().Status</span>
+
+                    @if (item.PayType == "Online" && !item.PayStatuses.Any(p => p.ResponseCode == "00") && item.OrderStatuses.Last().Code == (int)OrderStatusCode.WaitAccept)
+                    {
+                        <span>Chưa thanh toán - <a
+                                href='@Url.Action("Pay", "ViewProduct", new {area = "Products", orderId = item.Id})'>Nhấn vào
+                                đây</a> để thanh toán</span>
+                    }
+                </p>
+                <ul class="product-list">
+                    @foreach (var detail in item.OrderDetails)
+                    {
+                        <li class="product-item">
+                            <div class="product-img">
+                                <img src="/files/Products/@detail.Color?.Image" alt="">
+                            </div>
+                            <div class="product-desc">
+                                <a href='@Url.Action("Details", "ViewProduct", new {area = "Products", slug = detail.Product?.Slug})'
+                                    class="product-name">@detail.Product?.Name</a>
+                                <div class="d-flex justify-content-between">
+                                    <div class="product-info">
+                                        Phân loại: @detail.Color?.Name, @(detail.Capacity?.Ram)GB/@(detail.Capacity?.Rom)GB
+                                    </div>
+                                    <div class="product-cost">
+                                        <p class="product-quantity">x@(detail.Quantity)</p>
+                                        <p class="product-price">@detail.Capacity?.SellPrice.ToString("N0", new
+                                    CultureInfo("vi-VN"))<sup>đ</sup></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <hr class="m-0">
+                    }
+                </ul>
+                <div class="order-footer">
+                    <div class="order-total-cost">
+                        Thành tiền: <span class="fw-semibold primary-text">@item.TotalCost.ToString("N0", new
+                        CultureInfo("vi-VN"))<sup>đ</sup></span>
+                    </div>
+                    <div class="order-action">
+                        @if (item.OrderStatuses.Last().Code != (int)OrderStatusCode.Delivered &&
+                       item.OrderStatuses.Last().Code != (int)OrderStatusCode.Canceled)
+                        {
+                            <button class="btn primary-bg text-white" onclick="openModal('@item.Id')">Hủy đơn hàng</button>
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+    @if (Model.Count == 0)
+    {
+
+        <div class="order-empty">
+            <div class="order-empty-container">
+                <div class="empty-img">
+                    <img src="/images/order-empty.png" alt="">
+                </div>
+                <div class="empty-content">
+                    <p>Chưa có đơn hàng</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="cancel-order-modal" tabindex="-1" aria-labelledby="cancel-order-modalLabel" aria-hidden="true">
+    <form class="modal-dialog modal-dialog-centered" method="post">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-6" id="cancel-order-modalLabel">Lý do hủy đơn hàng</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+                <input type="hidden" name="Id" id="orderId-canceled" value="">
+                <textarea name="note" class="form-control w-100" id="canceled-note" rows="5" placeholder="Vui lòng nhập lý do hủy"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-primary" onclick="sendRequsetDelete()">Xác nhận</button>
+        </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/Order/orderByUser.js"></script>
+}

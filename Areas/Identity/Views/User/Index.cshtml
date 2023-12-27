@@ -1,0 +1,149 @@
+@model UserIndexModel
+
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+<div class="admin-manager-user h-100">
+    <div class="card table-user-manager mb-4 h-100">
+        <div class="card-header table-heading d-flex justify-content-between align-items-center">
+            <div class="header-left">
+                <i class="fas fa-table me-1"></i>
+                @ViewData["Title"]
+            </div>
+            <div class="header-right d-flex align-items-center">
+                <form method="get">
+                    <div class="input-group-sm d-flex justify-content-end align-items-center">
+                        <input class="form-control w-50" type="text" name="s" placeholder="Tìm kiếm...."
+                            value="@Context.Request.Query["s"]">
+                        <button class="btn ms-1" type="submit">
+                            <i class="text-primary fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                </form>
+                <a class="ms-1" asp-action="Index" asp-controller="User" asp-area="Identity">
+                    <i class="text-danger fa-solid fa-xmark"></i>
+                </a>
+            </div>
+        </div>
+        <div class="card-body table-content mb-4">
+            <table class="table table-bordered">
+                <thead>
+                    <tr class="text-center">
+                        <th class="col">Tên đăng nhập</th>
+                        <th class="col">Họ tên</th>
+                        <th class="col">Email</th>
+                        <th class="col">Số điện thoại</th>
+                        @* <th class="col">Vai trò</th> *@
+                        <th class="col-1"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.User != null)
+                    {
+                        foreach (var item in Model.User)
+                        {
+                            <tr>
+                                <td>@item.UserName</td>
+                                <td>@item.FullName</td>
+                                <td>
+                                    <div class="d-flex justify-content-between">
+                                        @item.Email
+                                        @if (item.EmailConfirmed)
+                                        {
+                                            <a data-bs-toggle="tooltip" title="" data-bs-original-title="Đã xác thực">
+                                                <i class="text-success fa-regular fa-circle-check"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a data-bs-toggle="tooltip" title="" data-bs-original-title="Chưa xác thực">
+                                                <i class="text-warning fa-solid fa-circle-exclamation"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@item.PhoneNumber</td>
+                                @* <td>
+                        <div class="role-container d-flex justify-content-center">
+                        <div class="role-list text-center">
+                        @if (item.Roles is not null)
+                        {
+                        var classText = "";
+                        foreach (var role in item.Roles)
+                        {
+                        if (role == RoleName.Administrator)
+                        {
+                        classText = "role-admin";
+                        }
+                        else if (role == RoleName.Editor)
+                        {
+                        classText = "role-editor";
+                        }
+                        else if (role == RoleName.Staff)
+                        {
+                        classText = "role-staff";
+                        }
+                        else if (role == RoleName.Customer)
+                        {
+                        classText = "role-customer";
+                        }
+                        <p class="role-item fw-bold mb-0 @(classText)">@role</p>
+                        }
+                        }
+                        </div>
+                        </div>
+                        </td> *@
+                                <td>
+                                    <div class="more-action">
+                                        <div class="dropdown">
+                                            <span class="dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                                <i class="fa-solid fa-ellipsis"></i>
+                                            </span>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" asp-action="SetPassword" asp-controller="User"
+                                                        asp-area="Identity" asp-route-userid="@item.Id">Đặt lại mật khẩu</a>
+                                                </li>
+                                                <li><a class="dropdown-item" asp-action="AddRole" asp-controller="User"
+                                                        asp-area="Identity" asp-route-userid="@item.Id">Cập nhật vai trò</a>
+                                                </li>
+                                                <li><button class="btn dropdown-item"
+                                                        onclick="DeleteItem('@Url.Action("DeleteUser", "User", new {area = "Identity", id = item.Id})')">
+                                                        Xóa
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            @{
+                var pageModel = new PagingModel()
+            {
+                CountPage = ViewBag.CountPage,
+                CurrentPage = ViewBag.CurrentPage,
+                GenerateUrl = p => Url.Action("Index", "User", new { area = "Identity", p }) ?? ""
+            };
+            }
+            <partial name="_Paging" model="@pageModel" />
+            <partial name="_AlertMessage" />
+        </div>
+    </div>
+</div>
+@section Scripts
+{
+    <partial name="_ModalDelete"></partial>
+    <script>
+        $(document).ready(function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        })
+    </script>
+}

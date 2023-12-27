@@ -1,0 +1,465 @@
+@using System.Globalization;
+@using App.Services;
+@using App.Areas.AdminCP.Controllers;
+
+@inject HomeCategoryService _homeCategory;
+
+@{
+    ViewData["Title"] = "Trang quản trị";
+    Layout = "/Views/Shared/_LayoutAdminCP.cshtml";
+
+    decimal TotalRevenue = ViewBag.TotalRevenue;
+    decimal RevenureToday = ViewBag.RevenureToday;
+    decimal TotalProfit = ViewBag.TotalProfit;
+    var queryRevenue = Context.Request.Query["revenure"].ToString();
+    var dataRevenure = ViewBag.DataRevenure as Dictionary<string, decimal>;
+    var dataProfit = ViewBag.DataProfit as Dictionary<string, decimal>;
+    var productsBestSeller = _homeCategory.GetData().Products;
+    var productsBestSellMonth = ViewBag.ProductBSM as List<AdminCPController.ProductWithSold>
+    ?? new List<AdminCPController.ProductWithSold>();
+
+    var currentRevenure = Context.Request.Query["revenure"];
+    var currentProfit = Context.Request.Query["profit"];
+}
+
+<div class="admin-dashboard">
+    <h4 class="heading">Dashboard</h4>
+    <div class="row">
+        <div class="col-xxl-6">
+            <div class="row">
+                <div class="col-md-4 col-sm-6">
+                    <div class="card bg-primary text-white mb-4">
+                        <div class="card-body">
+                            <div class="title">
+                                Sản phẩm (@ViewBag.ProductTotal)
+                            </div>
+                            <div class="content">
+                                @ViewBag.ProductCount
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link"
+                                href='@Url.Action("Index", "Product", new {area = "Products"})'>Quản lý</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">
+                            <div class="title">
+                                Hãng sản xuất
+                            </div>
+                            <div class="content">
+                                @ViewBag.BrandCount
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link"
+                                href='@Url.Action("Index", "Brand", new {area = "Products"})'>Quản lý</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card bg-info text-white mb-4">
+                        <div class="card-body">
+                            <div class="title">
+                                Tổng doanh thu
+                            </div>
+                            <div class="content">
+                                @TotalProfit.ToString("N0", new CultureInfo("vi-VN"))<sup>đ</sup>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link text-decoration-none fs-6" href='#'>
+                                Lợi nhuận: @TotalRevenue.ToString("N0", new CultureInfo("vi-VN"))<sup>đ</sup>
+                            </a>
+                            <div class="small text-white opacity-0"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card bg-success text-white mb-4">
+                        <div class="card-body">
+                            <div class="title">
+                                Đơn hàng
+                            </div>
+                            <div class="content">
+                                @ViewBag.OrderCount
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link"
+                                href='@Url.Action("Index", "Order", new {area = "Products"})'>Quản lý</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card bg-danger text-white mb-4">
+                        <div class="card-body">
+                            <div class="title">
+                                Khách hàng
+                            </div>
+                            <div class="content">
+                                @ViewBag.CustomerCount
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link"
+                                href='@Url.Action("Index", "User", new {area = "Identity"})'>Quản lý</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card bg-light text-dark mb-4">
+                        <div class="card-body">
+                            <div class="title">
+                                Doanh thu hôm nay
+                            </div>
+                            <div class="content">
+                                @RevenureToday.ToString("N0", new CultureInfo("vi-VN"))<sup>đ</sup>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href='#'></a>
+                            <div class="small text-white opacity-0"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="order-info-container mb-4 col-12">
+                <ul class="info-list">
+                    <li class="info-item">
+                        <a href='@Url.Action("Index", "Order", new {area = "Products", f = "-1"})'
+                            class="info-item-link">
+                            <div class="item-icon">
+                                <i class="fa-solid fa-money-check-dollar"></i>
+                            </div>
+                            <div class="item-quantity text-primary fw-semibold">
+                                @ViewBag.OrderNotPayed
+                            </div>
+                            <div class="item-content">
+                                Đơn hàng chưa thanh toán
+                            </div>
+                            <div class="item-nav-icon">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="info-item">
+                        <a href='@Url.Action("Index", "Order", new {area = "Products", f = "0"})'
+                            class="info-item-link">
+                            <div class="item-icon">
+                                <i class="fa-solid fa-cart-arrow-down"></i>
+                            </div>
+                            <div class="item-quantity text-primary fw-semibold">
+                                @ViewBag.OrderWaiting
+                            </div>
+                            <div class="item-content">
+                                Đơn hàng chưa xác nhận
+                            </div>
+                            <div class="item-nav-icon">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="info-item">
+                        <a href='@Url.Action("Index", "Order", new {area = "Products", f = "1"})'
+                            class="info-item-link">
+                            <div class="item-icon">
+                                <i class="fa-solid fa-cart-flatbed"></i>
+                            </div>
+                            <div class="item-quantity text-primary fw-semibold">
+                                @ViewBag.OrderNotDelivering
+                            </div>
+                            <div class="item-content">
+                                Đơn hàng chưa giao
+                            </div>
+                            <div class="item-nav-icon">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="info-item">
+                        <a href='@Url.Action("Index", "Order", new {area = "Products", f = "2"})'
+                            class="info-item-link">
+                            <div class="item-icon">
+                                <i class="fa-solid fa-truck-arrow-right"></i>
+                            </div>
+                            <div class="item-quantity text-primary fw-semibold">
+                                @ViewBag.OrderDelivering
+                            </div>
+                            <div class="item-content">
+                                Đơn hàng đang giao
+                            </div>
+                            <div class="item-nav-icon">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="info-item">
+                        <a href='@Url.Action("Index", "Order", new {area = "Products", f = "3"})'
+                            class="info-item-link">
+                            <div class="item-icon">
+                                <i class="fa-solid fa-people-carry-box"></i>
+                            </div>
+                            <div class="item-quantity text-primary fw-semibold">
+                                @ViewBag.OrderDelivered
+                            </div>
+                            <div class="item-content">
+                                Đơn hàng đã hoàn tất
+                            </div>
+                            <div class="item-nav-icon">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="info-item">
+                        <a href='@Url.Action("Index", "Order", new {area = "Products", f = "4"})'
+                            class="info-item-link">
+                            <div class="item-icon">
+                                <i class="fa-solid fa-rectangle-xmark"></i>
+                            </div>
+                            <div class="item-quantity text-primary fw-semibold">
+                                @ViewBag.OrderCanceled
+                            </div>
+                            <div class="item-content">
+                                Đơn hàng đã hủy
+                            </div>
+                            <div class="item-nav-icon">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-xxl-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="left-header">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Doanh thu
+                    </div>
+                    <div class="right-header">
+                        <div class="dropdown">
+                            <a class="btn btn-sm dropdown-toggle" href="#" role="button"
+                                style="border: 1px solid #ced4da; background-color: #fff; min-width: 100px;"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                @switch (queryRevenue)
+                                {
+                                    case "thisweek":
+                                        @("Tuần này")
+                                        break;
+                                    case "thismonth":
+                                        @("Tháng này")
+                                        break;
+                                    case "thisyear":
+                                        @("Năm nay")
+                                        break;
+                                    default:
+                                        @("Hôm nay")
+                                        break;
+                                }
+                            </a>
+
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", revenure = "today", profit = currentProfit})'>
+                                        Hôm nay
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", revenure = "thisweek", profit = currentProfit})'>
+                                        Tuần này
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", revenure = "thismonth", profit = currentProfit})'>
+                                        Tháng này
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", revenure = "thisyear", profit = currentProfit})'>
+                                        Năm nay
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="myBarChart" width="100%" height="40"></canvas>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="left-header">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        Doanh thu
+                    </div>
+                    <div class="right-header">
+                        <div class="dropdown">
+                            <a class="btn btn-sm dropdown-toggle" href="#" role="button"
+                                style="border: 1px solid #ced4da; background-color: #fff; min-width: 100px;"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                @switch (queryRevenue)
+                                {
+                                    case "thisweek":
+                                        @("Tuần này")
+                                        break;
+                                    case "thismonth":
+                                        @("Tháng này")
+                                        break;
+                                    case "thisyear":
+                                        @("Năm nay")
+                                        break;
+                                    default:
+                                        @("Hôm nay")
+                                        break;
+                                }
+                            </a>
+
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", profit = "today", revenure = currentRevenure})'>
+                                        Hôm nay
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", profit = "thisweek", revenure = currentRevenure})'>
+                                        Tuần này
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", profit = "thismonth", revenure = currentRevenure})'>
+                                        Tháng này
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                        href='@Url.Action("Index", "AdminCP", new {area = "AdminCP", profit = "thisyear", revenure = currentRevenure})'>
+                                        Năm nay
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="myBarChart2" width="100%" height="40"></canvas>
+                </div>
+            </div>
+            <div class="best-selling">
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="heading">
+                            Sản phẩm bán chạy nhất
+                        </div>
+                        <ul class="best-sell-list">
+                            @foreach (var item in productsBestSeller)
+                            {
+                                var product = item.Product;
+                                <li class="best-sell-item">
+                                    <a href='@Url.Action("Details", "Product", new {area = "Products", Id = product.Id})'
+                                        class="best-sell-link">
+                                        <div class="product-img">
+                                            <img src="/files/Products/@product.Colors!.FirstOrDefault()!.Image" alt="">
+                                        </div>
+                                        <div class="product-info">
+                                            <div class="product-name">
+                                                @product.Name
+                                            </div>
+                                            <div class="product-sold">
+                                                Đã bán: @product.Colors.SelectMany(c => c.Capacities).Sum(c => c.Sold)
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="heading">
+                            Sản phẩm bán chạy nhất tháng
+                        </div>
+                        <ul class="best-sell-list">
+                            @foreach (var item in productsBestSellMonth)
+                            {
+                                <li class="best-sell-item">
+                                    <a href='@Url.Action("Details", "Product", new {area = "Products", Id = item.Id})'
+                                        class="best-sell-link">
+                                        <div class="product-img">
+                                            <img src="/files/Products/@item.Image" alt="">
+                                        </div>
+                                        <div class="product-info">
+                                            <div class="product-name">
+                                                @item.Name
+                                            </div>
+                                            <div class="product-sold">
+                                                Đã bán: @item.Sold
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var labels = [@Html.Raw(string.Join(",", dataRevenure!.Select(c => $"'{c.Key}'")))];
+        var datas = [@string.Join(",", dataRevenure!.Select(c => c.Value))]
+        var maxLimits = @dataRevenure!.Count;
+        var maxColumn = @(Math.Ceiling((double)Convert.ToInt32(dataRevenure.Max(c => c.Value) == 0 ? 10000000 : dataRevenure.Max(c => c.Value)) / 1000000) * 1000000);
+        var minColume = @{
+            var min = Math.Floor((double)Convert.ToInt32(dataRevenure.Min(c => c.Value) == 0 ? 10000000 : dataRevenure.Min(c => c.Value)) / 1000000) * 1000000;
+            if (min < 0)
+            {
+                @(min)
+                ;
+            }
+            else
+            {
+                @(0)
+                ;
+            }
+        };
+
+        var labels2 = [@Html.Raw(string.Join(",", dataProfit!.Select(c => $"'{c.Key}'")))];
+        var datas2 = [@string.Join(",", dataProfit!.Select(c => c.Value))]
+        var maxLimits2 = @dataProfit!.Count;
+        var maxColumn2 = @(Math.Ceiling((double)Convert.ToInt32(dataProfit.Max(c => c.Value) == 0 ? 10000000 : dataProfit.Max(c => c.Value)) / 1000000) * 1000000);
+        var minColume2 = @{
+            var min2 = Math.Floor((double)Convert.ToInt32(dataProfit.Min(c => c.Value) > 0 ? 10000000 : dataProfit.Min(c => c.Value)) / 1000000) * 1000000;
+            if (min2 < 0)
+            {
+                @(min2)
+                ;
+            }
+            else
+            {
+                @(0)
+                ;
+            }
+        };
+    </script>
+    <script src="~/js/Admin/dashboard.js"></script>
+    <script src="~/js/Helper/index.js"></script>
+}

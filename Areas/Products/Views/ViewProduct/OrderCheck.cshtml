@@ -1,0 +1,150 @@
+@model Order
+@{
+    ViewData["Title"] = "Tra cứu đơn hàng";
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<div class="order-check-container mt-2 mt-xl-4">
+    <p class="heading text-center">Tra cứu đơn hàng</p>
+    <hr class="primary-text mt-2">
+    <div class="order-input mb-2">
+        <div class="banner">
+            <div class="row h-100 flex-column flex-md-row">
+                <div class="col-12 h-100 col-md-6">
+                    <div class="order-check-banner">
+                        <img src="/images/delivery.jpg" alt="">
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="input-form">
+                        <form class="w-75" method="get">
+                            <div class="form-group mb-2">
+                                <label asp-for="PhoneNumber" class="form-label">Số điện thoại (bắt buộc)</label>
+                                <input asp-for="PhoneNumber" class="form-control" required>
+                            </div>
+                            <div class="form-group mb-4">
+                                <label asp-for="Code" class="form-label">Mã đơn hàng (bắt buộc)</label>
+                                <input asp-for="Code" class="form-control" required>
+                            </div>
+                            <div class="form-group text-center">
+                                <button class="btn primary-bg text-white">Kiểm tra</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <partial name="_Message" />
+
+
+    @if (Model != null)
+    {
+        <div class="order-info">
+            <div class="order-head">
+                <div class="person-info">
+                    <p class="mb-0"><span class="fw-semibold">Họ tên:</span> @Model.FullName</p>
+                    <p class="mb-0"><span class="fw-semibold">Số điện thoại:</span> @Model.PhoneNumber</p>
+                    <p class="mb-0"><span class="fw-semibold">Địa chỉ:</span> @(Model.SpecificAddress + ", " + Model.Commune
+                    + ", " + Model.District + ", " + Model.City)</p>
+                    <p class="mb-0"><span class="fw-semibold">Ngày đặt:</span> @Model.OrderDate.ToString("dd/MM/yyyy")</p>
+                    <p class="mb-0"><span class="fw-semibold">Ngày nhận:</span> @(Model.ReceivedDate != null ?
+                    Model.ReceivedDate?.ToString("dd/MM/yyyy") : "--/--/---")</p>
+                    <p class="mb-0"><span class="fw-semibold">Trạng thái đơn hàng:</span>
+                        @foreach (var item in Model.OrderStatuses)
+                        {
+                        <p class="my-1 ms-4" style="font-size: 16px;">@item.DateUpdate.ToString("hh:mm dd/MM/yyy") -
+                                @item.Status</p>
+                        }
+                    <p class="mb-0">
+                        <span class="fw-semibold">Thành tiền:</span> <span
+                            class="fw-semibold primary-text">@Model.TotalCost.ToString("N0", new
+                        CultureInfo("vi-VN"))<sup>đ</sup></span>
+                            @if (Model.PayType == "Online")
+                            {
+                                if (Model.PayStatuses.FirstOrDefault(p => p.ResponseCode == "00") != null)
+                                {
+                                <span> - Đã thanh toán</span>
+                                }
+                                else
+                                {
+                                <span>- Chưa thanh toán. <a
+                                        href='@Url.Action("Pay", "ViewProduct", new {area = "Products", orderId = Model.Id})'>Nhấn
+                                        vào đây</a> để thanh toán</span>
+                                }
+                            }
+                    </p>
+                    <p class="mb-0"><span class="fw-semibold">Hình thức thanh toán:</span>
+                            @if (Model.PayType == "Online")
+                            {
+                                <text>Thanh toán trực tuyến</text>
+                            }
+                            else
+                            {
+                                <text>Thanh toán khi nhận hàng</text>
+                            }
+                    </p>
+                </div>
+                <div class="logo-tranport">
+
+                </div>
+            </div>
+            <ul class="product-list">
+                <h6 class="mb-3">Sản phẩm mua:</h6>
+                @foreach (var item in Model.OrderDetails)
+                {
+                    <li class="product-item">
+                        <div class="row h-100 m-0">
+                            <div class="product-item-img col-3 col-md-3">
+                                <img src="/files/Products/@item.Color!.Image" alt="">
+                            </div>
+                            <div class="product-item-info col-6 col-md-6">
+                                <div class="product-item-name">
+                                    <span>@item.Product?.Name</span>
+                                </div>
+                                <div class="product-item-color">
+                                    <span>Màu sắc: @item.Color?.Name</span>
+                                </div>
+                                <div class="product-item-capacity">
+                                    <span>@(item.Capacity?.Ram)GB/</span>
+                                    <span>
+                                        @if (item.Capacity?.Rom % 1024 == 0)
+                                        {
+                                            @(item.Capacity?.Rom / 1024 + "TB")
+                                        }
+                                        else
+                                        {
+                                            @(item.Capacity?.Rom + "GB")
+                                        }
+                                    </span>
+                                </div>
+                                <div class="product-item-quantity">
+                                    <span>Số lượng: @item.Quantity</span>
+                                </div>
+                                <div class="product-item-price mt-1">
+                                    <div>
+                                        <span class="fw-semibold">
+                                            @item.SellPrice.ToString("N0", new CultureInfo("vi-VN"))</span><sup>đ</sup>
+                                    </div>
+                                    @if (item.SellPrice != item.Capacity?.SellPrice)
+                                    {
+                                        <div>
+                                            <del>@item.SellPrice.ToString("N0", new CultureInfo("vi-VN"))</del><sup>đ</sup>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="product-item-total-price col-3 col-md-3">
+                                <span>Tổng tiền:</span>
+                                <div class="primary-text fw-semibold">
+                                    <span>@((item.SellPrice * item.Quantity).ToString("N0", new
+                                          CultureInfo("vi-VN")))</span><sup>đ</sup>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

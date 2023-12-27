@@ -1,0 +1,322 @@
+@model Product
+@using Microsoft.AspNetCore.Identity;
+
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "/Views/Shared/_Layout.cshtml";
+    
+    List<Post> posts = ViewBag.Posts;
+    List<Product> products = ViewBag.otherProducts;
+
+    var now = DateTime.Now; 
+    var discountOfProduct = Model.ProductDiscounts.Where(x => x.Discount.StartAt <= now && x.Discount.EndAt >= now);
+    
+    var percenDiscount = discountOfProduct.Sum(x => x.Discount.PercentDiscount);
+    var moneyDiscount = discountOfProduct.Sum(x => x.Discount.MoneyDiscount);
+}
+
+<div class="product-details-container bg-white px-2">
+    <div class="product-heading pt-2">
+        <p>@Model.Name <span id="rating-heading" class="ms-2 fs-6"></span></p>
+    </div>
+    <hr class="primary-text opacity-25 mt-0">
+    <div class="product-info row">
+        <input type="hidden" id="product-id" value="@Model.Id">
+        <div class="col-lg-4 col-md-6">
+            <div class="photo-slide">
+                <div id="product-proto-slide" class="carousel slide" data-bs-ride="true">
+                    <div class="carousel-indicators flex-wrap mx-3 my-0">
+                        @{
+                            int i = 0;
+                            if (Model.Photos != null)
+                            {
+                                foreach (var item in Model.Photos)
+                                {
+                                    <button type="button" data-bs-target="#product-proto-slide" data-bs-slide-to="@i"
+                                    class="sm-photo-btn" aria-current="true" aria-label="Hình ảnh @i">
+                                        <div class="sm-photo-box">
+                                            <img src="/files/Products/@item.Name" class="sm-photo d-block w-100" alt="...">
+                                        </div>
+                                    </button>
+                                    i++;
+                                }
+                            }
+                            if (Model.Colors != null)
+                            {
+                                bool isFirst = true; // Active ảnh đầu tiên của color
+                                foreach (var item in Model.Colors)
+                                {
+                                    if (item.Image != null)
+                                    {
+                                        <button id="btn-show-color-image-@item.Id" type="button" data-bs-target="#product-proto-slide" data-bs-slide-to="@i"
+                                        class="sm-photo-btn @if(isFirst) {@("active"); isFirst = false;}" aria-current="true" aria-label="Hình ảnh @i">
+                                            <div class="sm-photo-box">
+                                                <img src="/files/Products/@item.Image" class="sm-photo d-block w-100" alt="...">
+                                            </div>
+                                        </button>
+                                        i++;
+                                    }
+                                }
+                            }
+                        }
+                    </div>
+                    <div class="carousel-inner">
+                        @{
+                            if (Model.Photos != null)
+                            {
+                                foreach (var item in Model.Photos)
+                                {
+                                    <div class="carousel-item">
+                                        <div class="w-100 h-100 d-flex justify-content-center align-items-center">
+                                            <img src="/files/Products/@item.Name" class="" alt="...">
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            if (Model.Colors != null)
+                            {
+                                bool isFirst = true;
+                                foreach (var item in Model.Colors)
+                                {
+                                    if (item.Image != null)
+                                    {
+                                        <div class="carousel-item  @if(isFirst) {@("active"); isFirst = false;}">
+                                            <div class="w-100 h-100 d-flex justify-content-center align-items-center">
+                                                <img src="/files/Products/@item.Image" class="" alt="...">
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#product-proto-slide"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#product-proto-slide"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 col-md-6 d-flex flex-column">
+            <div class="product-options flex-grow-1">
+                <div class="options-color">
+                    <p class="fw-semibold heading">Chọn màu: </p>
+                    <ul class="colors-list" id="color-list">
+                        @if(Model.Colors != null)
+                        {
+                            bool isFirst = true;
+                            foreach(var item in Model.Colors)
+                            {
+                            <li class="color-item @if(isFirst) {@("active"); isFirst=false;}" data-id="@item.Id" onclick="chooseOption(@item.Id)">
+                                <span class="color-name">@item.Name</span>
+                                <span class="color-checked"><i class="fa-solid fa-check"></i></span>
+                            </li>
+                            }
+                        }
+                    </ul>
+                </div>
+
+                <div class="options-price">
+                    <p class="fw-semibold heading">Chọn bộ nhớ:</p>
+                    @if(Model.Colors != null)
+                    {
+                        bool isFirst = true;
+                        foreach (var color in Model.Colors)
+                        {
+                            if (color.Capacities != null)
+                            {
+                                <ul class="prices-list colors-list @if(isFirst) {@("active")}" data-id="@color.Id">
+                                @foreach (var capa in color.Capacities)
+                                {
+                                    <li class="price-item @if(isFirst) {@("active"); isFirst=false;}" data-id="@capa.Id"  onclick="chooseOption(@color.Id, @capa.Id)">
+                                        <span class="price-name">@(capa.Ram + "GB/" + (capa.Rom % 1024 == 0 ? capa.Rom/1024 + "TB" : capa.Rom + "GB"))</span>
+                                        <span class="price-default">@((capa.SellPrice * (100-percenDiscount)/100 - moneyDiscount).ToString("N0", new CultureInfo("vi-VN")))<sup>đ</sup></span>
+                                        @if(percenDiscount != 0 || moneyDiscount != 0)
+                                        {
+                                            <del class="price-default text-secondary">@capa.SellPrice.ToString("N0", new CultureInfo("vi-VN"))<sup>đ</sup></del>
+                                        }
+                                        <span class="price-checked"><i class="fa-solid fa-check"></i></span>
+                                    </li>
+                                }
+                                </ul>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+            <div class="product-promotion">
+                <ul class="product-promotion-list">
+                    <li class="product-promotion-item"><i class="fa-solid fa-caret-right"></i> Bảo hành 12 tháng</li>
+                    <li class="product-promotion-item"><i class="fa-solid fa-caret-right"></i> Lỗi 1 đổi 1 trong 15 ngày đầu nếu lỗi của NSX</li>
+                    <li class="product-promotion-item"><i class="fa-solid fa-caret-right"></i> Tặng miến dán cường lực chất lượng cao</li>
+                    <li class="product-promotion-item"><i class="fa-solid fa-caret-right"></i> Tặng ốp lưng silicon siêu bền</li>
+                </ul>
+            </div>
+            <div class="product-action">
+                <div class="row align-items-center">
+                    <div class="col-lg-8 offset-lg-1 col-md-9 col-9 offset-0 offset-md-0 col-xl-8">
+                        <span class="btn primary-bg text-white fs-6 fw-normal w-100 btn-buy-now" onclick="BuyNow()">
+                            <span class="buy-now-text">Mua ngay</span>
+                            <p class="buy-now-desc">Giao tại nhà (COD) hoặc nhận tại cửa hàng</p>
+                        </span>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-3 col-xl-3">
+                        <span class="btn btn-add-to-cart" onclick="AddToCart()">
+                            <i class="primary-text fa-solid fa-cart-plus"></i>
+                            <p>Thêm vào giỏ</p>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="col-lg-3">
+            <div class="other-product">
+                <p class="heading primary-bg text-white py-2 fw-normal my-1 text-center rounded">
+                    Có thể bạn quan tâm
+                </p>
+                @await Component.InvokeAsync("App.Components.OtherProductComponent", products)
+            </div>
+        </div>
+    </div>
+    <div class="desc-configuration">
+        <div class="row">
+            <div class="col-lg-8 product-description" id="product-description">
+                <hr class="primary-text mt-0">
+                <div class="desc-content">
+                    @Html.Raw(Model.Description)
+                </div>
+                <div class="product-description-action">
+                    <button class="btn" id="btn-show-desc">Xem thêm</button>
+                    <button class="btn" id="btn-hide-desc" style="display: none;">Ẩn bớt</button>
+                </div>
+            </div>
+            <div class="col-lg-4 product-configuration">
+                <p class="product-configuration-heading primary-bg rounded text-white text-center py-2">Thông số kỹ thuật</p>
+                <table class="configuration-table table table-striped">
+                    <tr class="configuration-table-row">
+                        <td class="col-4">Tên sản phẩm</td>
+                        <td class="col-6">@Model.Name</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td class="col-4">Hãng sản xuất</td>
+                        <td class="col-6">@Model.Brand?.Name</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td class="col-4">Năm ra mắt</td>
+                        <td class="col-6">@Model.ReleaseDate?.ToString("MM/yyyy")</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td class="col-4">Kích thước màn hình</td>
+                        <td class="col-6">@Model.ScreenSize"</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Camera</td>
+                        <td>@Model.Camera</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Chipset</td>
+                        <td>@Model.Chipset</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Dung lượng Ram</td>
+                        <td>@{
+                                var ram = Model.Colors?.FirstOrDefault()?.Capacities.Select(c => c.Ram.ToString() + " GB").Distinct();
+                                <text>@string.Join(", ", ram!)</text>
+                            }
+                        </td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Bộ nhớ trong</td>
+                        <td>@{
+                                var rom = Model.Colors?.FirstOrDefault()?.Capacities.Select(c => c.Rom.ToString() + " GB").Distinct();
+                                <text>@string.Join(", ", rom!)</text>
+                            }
+                        </td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Pin</td>
+                        <td>@(Model.Battery)mAh (@(Model.Charger)W)</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Thẻ sim</td>
+                        <td>@Model.SIM</td>
+                    </tr>
+                    <tr class="configuration-table-row">
+                        <td>Hệ điều hành</td>
+                        <td>@Model.OS</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="product-details-review">
+    <div class="heading px-2">
+        <h5>Đánh giá và nhận xét - 
+        <span id="review-avg-rate mb-0">
+            <span id="review-avg-rate">0</span>/5
+        </span>
+        <i class="fa-solid fa-star fw-semibold third-text"></i>
+        </h5>
+    </div>
+    <div class="review-container">
+        <div class="create-review px-2">
+            @{
+                if (ViewBag.User == null)
+                {
+                    <p class="mt-2">Bạn phải <a href='@Url.Action("Login", "Account", new {area = "Identity", returnUrl = $"/{Model.Slug}"})' class="text-decoration-none primary-text">đăng nhập</a> để đánh giá và nhận xét</p>
+                }
+                else
+                {
+                    <div class="heading d-flex align-items-center mb-2 mt-2">
+                        <p class="mb-0">Đánh giá của bạn</p>
+                        <div class="d-flex flex-column ms-2">
+                            <div class="rate-star">
+                                <i role="button" class="fa-solid fa-star third-text star-create-review" id="star-index-1" onclick="updateRate(1)"></i>
+                                <i role="button" class="fa-solid fa-star third-text star-create-review" id="star-index-2" onclick="updateRate(2)"></i>
+                                <i role="button" class="fa-solid fa-star third-text star-create-review" id="star-index-3" onclick="updateRate(3)"></i>
+                                <i role="button" class="fa-solid fa-star third-text star-create-review" id="star-index-4" onclick="updateRate(4)"></i>
+                                <i role="button" class="fa-solid fa-star third-text star-create-review" id="star-index-5" onclick="updateRate(5)"></i>
+                            </div>
+                            <input type="hidden" id="total-star-review" value="5">
+                        </div>
+                    </div>
+                    <textarea id="create-review-content" rows="5" class="w-100 form-control"></textarea>
+                    <button class="btn primary-bg text-white px-3 mt-2 mt-md-3" onclick="sendReview()">Gửi</button>
+                }
+            }
+        </div>
+        <ul class="review-list px-md-4" id="review-list">
+            <p class="mt-4">Chưa có đánh giá</p>
+        </ul>
+    </div>
+</div>
+
+<div class="post-in-product mt-4">
+    <h5 class="title fw-semibold mb-2">Tin tức nổi bật</h5>
+    @await Component.InvokeAsync("App.Components.ListPostComponent", posts)
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast fade hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header align-items-center">
+            <i class="text-warning fs-6 fa-solid fa-circle-exclamation"></i>
+            <span class="ms-2 me-auto fs-6">Đã thêm sản phẩm vào giỏ hàng</span>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/js/Helper/index.js"></script>
+    <script src="~/js/Products/details.js"></script>
+}

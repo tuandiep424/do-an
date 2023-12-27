@@ -1,0 +1,57 @@
+@using Microsoft.AspNetCore.Identity
+@using App.Models
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<ul class="login-section navbar-nav d-flex align-items-center">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        var displayName = (user != null && !string.IsNullOrEmpty(user.FullName)) ? $"{user.FullName}" : $"{user?.Email}";
+        var userAvatar = "/files/UserAvatar/" + (string.IsNullOrEmpty(user?.UserAvatar) ? "no-image.png" : user.UserAvatar);
+
+        <input type="hidden" value="@userAvatar" id="user-avatar">
+        <li class="nav-item">
+            <a class="nav-link text-white dropdown-toggle d-flex align-items-center" href="#"
+                id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                <div class="header-user-avatar d-flex justify-content-center align-items-center">
+                    <img src="@userAvatar" alt="">
+                </div>
+                <span class="user-name">@displayName</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDarkDropdownMenuLink">
+                <li><a class="dropdown-item" asp-area="Identity" asp-action="Index" asp-controller="Manage">Tài
+                        khoản của tôi</a>
+                </li>
+                <li>
+                    <a class="dropdown-item d-md-none d-block" asp-area="Products" asp-action="OrderByUser"
+                        asp-controller="Order">
+                        Đơn hàng
+                    </a>
+                </li>
+                <li>
+                    <partial name="_MenuAdmin" />
+                </li>
+                <li>
+                    <form method="post" class="form-inline" asp-action="LogOff" asp-controller="Account"
+                        asp-area="Identity">
+                        <button id="logout" type="submit" class="dropdown-item btn btn-link text-dark border-0">Đăng
+                            xuất</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white text-center" id="login" asp-area="Identity" asp-action="Login"
+                asp-controller="Account">
+                <i class="user-icon fa-regular fa-user"></i>
+                <span class="login-text">Đăng nhập</span>
+            </a>
+        </li>
+    }
+</ul>

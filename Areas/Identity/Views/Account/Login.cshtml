@@ -1,0 +1,59 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppUser> _signInManager;
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-container">
+    <div class="login-page mt-3 mt-md-4">
+        <p class="login-heading">Đăng nhập</p>
+        <div class="page-logo">
+            <img src="~/images/logo-color.png">
+        </div>
+        <section>
+            <form asp-action="Login" asp-controller="Account" asp-route-returnUrl="@ViewData["returnUrl"]">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control" placeholder="example@gmail.com"/>
+                    <label asp-for="Email" class="form-label primary-text opacity-100"></label>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Password" class="form-control" placeholder="Mật khẩu" />
+                    <label asp-for="Password" class="form-label primary-text opacity-100"></label>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="checkbox mb-3 d-flex justify-content-between">
+                    <label asp-for="RememberMe" class="form-label">
+                        <input class="form-check-input" asp-for="RememberMe" />
+                        Ghi nhớ đăng nhập
+                    </label>
+                    <a id="forgot-password" asp-action="ForgotPassword" asp-controller="Account" asp-area="Identity"
+                        class="text-decoration-none">Quên mật khẩu ?</a>
+                </div>
+                <div>
+                    <button type="submit" class="w-100 btn primary-bg text-white">Đăng nhập</button>
+                </div>
+            </form>
+
+            <div>
+                <p class="mt-4 mb-1">
+                    Chưa có tài khoản ?
+                    <a class="primary-text text-decoration-none" asp-action="Register" asp-controller="Account"
+                        asp-area="Identity" asp-route-returnUrl="@ViewData["returnUrl"]">Đăng ký</a>
+                </p>
+                <p class="">
+                    <a class="text-decoration-none" id="resend-confirmation"
+                        asp-action="ResendEmailConfirmation" asp-controller="Account" asp-area="Identity">Gửi lại
+                        email xác thực</a>
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

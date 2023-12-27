@@ -1,0 +1,185 @@
+@using System.Linq;
+@using Microsoft.AspNetCore.Identity;
+@model Order
+
+@inject UserManager<AppUser> _userManager;
+
+@{
+    ViewData["Title"] = "Đặt hàng";
+    Layout = "/Views/Shared/_Layout.cshtml";
+    var cartList = ViewBag.CartList as List<CartItem>;
+    cartList ??= new List<CartItem>();
+    var totalCost = 0.0m;
+    var user = await _userManager.GetUserAsync(User);
+}
+
+<div class="order-container mt-2 mt-md-4">
+    <p class="heading">Đặt hàng</p>
+    <hr class="primary-text mt-2 mb-3">
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="order-infor px-4 py-4">
+                <h5 class="mb-3">Thông tin nhận hàng</h5>
+                <partial name="_StatusMessage" />
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row mb-2">
+                        <div class="col-md-6 form-group">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" value="@(user == null ? "" : user.FullName)">
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control"
+                                value="@(user == null ? "" : user.PhoneNumber)">
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col form-group">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" value="@(user == null ? "" : user.Email)">
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-4 form-group">
+                            <label asp-for="City" class="form-label"></label>
+                            <select asp-for="City" class="form-control">
+                                <option value="" selected>Chọn tỉnh thành</option>
+                            </select>
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label asp-for="District" class="form-label"></label>
+                            <select asp-for="District" class="form-control">
+                                <option value="" selected>Chọn quận huyện</option>
+                            </select>
+                            <span asp-validation-for="District" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label asp-for="Commune" class="form-label"></label>
+                            <select asp-for="Commune" class="form-control">
+                                <option value="" selected>Chọn phường xã</option>
+                            </select>
+                            <span asp-validation-for="Commune" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col form-group">
+                            <label asp-for="SpecificAddress" class="form-label"></label> (Đường, ngõ, số nhà, ...)
+                            <input asp-for="SpecificAddress" class="form-control "
+                                value="@(user == null ? "" : user.HomeAddress)">
+                            <span asp-validation-for="SpecificAddress" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <ul class="product-list">
+                        <h6 class="mb-3">Sản phẩm mua:</h6>
+                        @if (cartList != null)
+                        {
+                            foreach (var item in cartList)
+                            {
+                                var percentDiscount = item.Product.ProductDiscounts.Sum(x => x.Discount.PercentDiscount);
+                                var moneyDiscount = item.Product.ProductDiscounts.Sum(x => x.Discount.MoneyDiscount);
+
+                                var originPrice = item.Capacity.SellPrice;
+                                var sellPrice = originPrice * (100 - percentDiscount) / 100 - moneyDiscount;
+
+                                totalCost += sellPrice * item.Quantity;
+
+                                <li class="product-item ">
+                                    <div class="row h-100 m-0">
+                                        <div class="product-item-img col-3 py-1">
+                                            <img src="/files/Products/@item.Color.Image" alt="">
+                                        </div>
+                                        <div class="product-item-info col-6">
+                                            <div class="product-item-name">
+                                                <span>@item.Product.Name</span>
+                                            </div>
+                                            <div class="product-item-color">
+                                                <span>Màu sắc: @item.Color.Name</span>
+                                            </div>
+                                            <div class="product-item-capacity">
+                                                <span>@(item.Capacity.Ram)GB /</span>
+                                                <span>@if (item.Capacity.Rom % 1024 == 0)
+                                                    {
+                                                        @(item.Capacity.Rom / 1024 +
+                                                            "TB")
+                                                    }
+                                                    else
+                                                    {
+                                                        @(item.Capacity.Rom + "GB")
+                                                    }</span>
+                                            </div>
+                                            <div class="product-item-quantity">
+                                                <span>Số lượng: @item.Quantity</span>
+                                            </div>
+                                            <div class="product-item-price">
+                                                <div class="fw-semibold">@sellPrice.ToString("N0", new
+                                            CultureInfo("vi-VN"))<sup>đ</sup></div>
+                                                @if (sellPrice != originPrice)
+                                                {
+                                                    <div>
+                                                        <del>
+                                                            @originPrice.ToString("N0", new CultureInfo("vi-VN"))
+                                                            <sup>đ</sup>
+                                                        </del>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="product-item-total-price col-3">
+                                            <span>Tổng tiền:</span>
+                                            <div class="primary-text fw-semibold">
+                                                <span>@((sellPrice * item.Quantity).ToString("N0", new
+                                                      CultureInfo("vi-VN")))</span><sup>đ</sup>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="cartId" value="@item.Id">
+                                </li>
+                            }
+                        }
+                    </ul>
+                    <div class="payments">
+                        <div class="total-cost">
+                            <div class="fw-semibold">Tổng cộng:</div>
+                            <div class="fw-semibold primary-text">
+                                <span>@totalCost.ToString("N0", new CultureInfo("vi-VN"))</span><sup>đ</sup>
+                            </div>
+                        </div>
+                        <div class="payments-method">
+                            <h6 class="mt-4">Hình thức thanh toán</h6>
+                            <div class="pay-options">
+                                <div class="row">
+                                    <div class="col-sm-6 col-12 pay-option-item pay-online active">
+                                        <input type="radio" class="inpPayType" name="PayType" id="Online" value="Online"
+                                            checked>
+                                        <label for="Online"> Thanh toán trực tuyến (VNPAY)</label>
+                                    </div>
+                                    <div class="col-sm-6 col-12 pay-option-item pay-offline">
+                                        <input type="radio" class="inpPayType" name="PayType" id="COD" value="COD">
+                                        <label for="COD"> Thanh toán khi nhận hàng</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-danger" id="online-pay-note">(*) Vui lòng lưu lại mã đơn hàng để thuận tiện theo
+                        dõi khi hủy thanh toán</span>
+                    <div class="form-btn mt-4">
+                        <button type="submit" class="btn text-white btn-order">Đặt hàng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/addressData.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}
